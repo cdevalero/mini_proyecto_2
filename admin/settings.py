@@ -44,9 +44,7 @@ INSTALLED_APPS = [
 
     # project's apps
     'user.apps.UserConfig',
-
-    # Paquetes
-    'crispy_forms',
+    
 ]
 
 MIDDLEWARE = [
