@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	{% load static %}
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Sandwich U</title>
+	<link rel="stylesheet" href="{% static 'ordenar.css' %}">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+</head>
+
+<body>
+	<section class="cls-nav-bar">
+		<div class="nav-bar">
+			<div class="nav-bar-logo">
+				Sandwich U
+			</div>
+			<div class="nav-bar-buttons">
+				<a href="/">Ordenar</a>
+				<a href="#">Reportes</a>
+			</div>
+		</div>
+	</section>
+	<section class="cls-ordenar">
+
+		<form action="#" method="post" class="box-sandwiches">
+			{% csrf_token %}
+			<div >
+				<div class="sandwich">
+					<samp class="title">Sandwich</samp>
+
+					<div class="sandwich-options">
+						<div class="sandwich-size">
+							<samp>Tamaño</samp>
+							<label>Individual ........... 180 <input class="w3-radio" type="radio" name="size" value="ind" required></label>
+							<label>Doble ................... 240 <input class="w3-radio" type="radio" name="size" value="dob" required></label>
+							<label>Triple .................... 300 <input class="w3-radio" type="radio" name="size" value="tri" required></label>
+						</div>
+						<div class="sandwich-ingredients">
+							<samp>Ingredientes</samp>
+							<div class="ingredientes-opciones">
+								<div class="swi-column">
+									<label>Jamón ................... 90 <input class="w3-check" type="checkbox" name="jam" value="jam"></label>
+									<label>Champiñones .....90 <input type="checkbox" class="w3-check name="cha" value="cha"></label>
+									<label>Pimentón ..............90 <input type="checkbox" class="w3-check name="pim" value="pim"></label>
+									<label>Doble queso ........90 <input class="w3-check" type="checkbox" name="dqq" value="dqq"></label>
+								</div>
+								<div class="swi-column">
+									<label>Aceitunas .....90 <input class="w3-check" type="checkbox" name="ace" value="ace"></label>
+									<label>Pepperoni .....90 <input class="w3-check" type="checkbox" name="pep" value="pep"></label>
+									<label>Salchichón ....90 <input class="w3-check" type="checkbox" name="sal" value="sal"></label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<br>
+				</div>
+
+			</div>
+
+			<div class="final">
+				<button class="btn-aceptar" type="submit" name="agregar">
+					Agregar
+				</button>
+				<button class="btn-aceptar" type="submit" name="terminar">
+					Terminar
+				</button>
+			</div>
+		</form>
+
+		{% if precio %}
+			<section class="cls-ordenar">
+				<form action="#" method="post" class="box-sandwiches">
+					<div >
+						<div class="sandwich">
+							<samp class="title">Orden</samp>
+							<br>		
+							{% for s in sandwiches%}
+							<div class="sandwich-options">
+								<div class="sandwich-size">
+									<samp>Sandwich {{s.numero}}</samp>
+									<label><strong>Tamaño: </strong>{{s.size}}</label>
+									<label><strong>Ingredientes: </strong>{% for i in s.ingrediente%} {{i}}, {% endfor %}</label>
+									<span><strong>Sub total: {{s.precio}}</strong></span>
+								</div>
+							</div>
+							{% endfor %}
+							<br>
+							<span class="title">Total: {{precio}}</span>
+						</div>
+					</div>
+				</form>
+			</section>
+		{% endif%}
+
+	</section>
+	<script src="ordenar.js"></script>
+</body>
+
+</html>

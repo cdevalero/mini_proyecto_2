@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        {% load static %}
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sandwich U</title>
+        <link rel="stylesheet" href="{% static 'ordenar.css' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    </head>
+
+<body>
+	<section class="cls-nav-bar">
+		<div class="nav-bar">
+			<div class="nav-bar-logo">
+				Sandwich U
+			</div>
+			<div class="nav-bar-buttons">
+				<a href="/">Ordenar</a>
+				<a href="#">Reportes</a>
+			</div>
+		</div>
+	</section>
+
+    <section class="cls-ordenar">
+		<form action="#" method="post" class="box-sandwiches">
+			<div >
+				<div class="sandwich">
+					<samp class="title">Orden</samp>
+                    <br>
+                
+                    <div>
+                        <span><strong>Nombre: </strong>{{cliente.n}} {{cliente.a}}</span>
+                        <br>
+                        <span><strong>Identificacion: </strong>{{cliente.i}}</span>
+                        <br>
+                        <span><strong>Direccion: </strong>{{cliente.d}}</span>
+                    </div>
+
+                    {% for s in sandwiches%}
+                    <div class="sandwich-options">
+						<div class="sandwich-size">
+							<samp>Sandwich {{s.numero}}</samp>
+                            <label><strong>Tamaño: </strong>{{s.size}}</label>
+                            <label><strong>Ingredientes: </strong>{% for i in s.ingrediente%} {{i}}, {% endfor %}</label>
+                            <span><strong>Sub total: {{s.precio}}</strong></span>
+						</div>
+					</div>
+                    {% endfor %}
+                    <br>
+                    <span class="title">Total: {{precio}}</span>
+				</div>
+			</div>
+		</form>
+	</section>
+
+	<section class="cls-ordenar">
+		<form action="#" method="post" class="box-sandwiches">
+			{% csrf_token %}
+			<div >
+				<div class="sandwich">
+					<div class="sandwich-options">
+						<div class="sandwich-size">
+							<samp>Delivery</samp>
+                            <br>
+							<label><input type="radio" name="deli" value="S" required> Si</label>
+							<label><input type="radio" name="deli" value="N" required> No</label>
+						</div>
+						<div class="sandwich-ingredients">
+							<samp>Metodo de pago</samp>
+                            <br>
+							<div class="ingredientes-opciones">
+								<div class="swi-column">
+									<select name="metodo">
+                                        <option value="Tarjeta">Tarjeta</option>
+                                        <option value="Efectivo">Efectivo</option>
+                                        <option value="Pago Movil">Pago Movil</option>
+                                        <option value="Zelle">Zelle</option>
+                                      </select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<br>
+				</div>
+
+				<div class="final">
+					<button class="btn-aceptar" type="submit" name="terminar">
+						Comprar
+					</button>
+				</div>
+
+			</div>
+		</form>
+	</section>
+	
+	<script src="ordenar.js"></script>
+</body>
+
+</html>

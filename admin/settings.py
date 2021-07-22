@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     # project's apps
     'user.apps.UserConfig',
 
-    # paquetes
+    # Paquetes
     'crispy_forms',
 ]
 

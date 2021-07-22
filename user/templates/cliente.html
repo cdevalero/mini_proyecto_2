@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	{% load static %}
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Sandwich U</title>
+	<link rel="stylesheet" href="{% static 'ordenar.css' %}">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+</head>
+
+<body>
+	<section class="cls-nav-bar">
+		<div class="nav-bar">
+			<div class="nav-bar-logo">
+				Sandwich U
+			</div>
+			<div class="nav-bar-buttons">
+				<a href="/">Ordenar</a>
+				<a href="#">Reportes</a>
+			</div>
+		</div>
+	</section>
+	<section class="cls-ordenar">
+
+		<form action="" method="post" class="box-sandwiches" autocomplete="off">
+			<div>
+				<div class="sandwich">
+					<div class="sandwich-options-2">
+						{% csrf_token %}
+						<div class="sandwich-size">
+							<label for="id_identificacion">Identificacion* <br><input class="w3-input" type="number" name="identificacion" required id="id_identificacion"></label>
+							<label for="id_nombre">Nombre* <br><input type="text" class="w3-input" name="nombre" maxlength="100" required id="id_nombre"></label>
+							<label for="id_apellido">Apellido* <br><input type="text" class="w3-input" name="apellido" maxlength="100" required id="id_apellido"></label>
+							<label for="id_direccion">Direccion* <br><textarea name="direccion" class="w3-input" cols="40" rows="10" maxlength="300" required id="id_direccion"></textarea></label>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="final">
+				<button class="btn-aceptar" type="submit" name="agregar">
+					Aceptar
+				</button>
+			</div>
+		</form>
+
+	</section>
+	<script src="ordenar.js"></script>
+</body>
+
+</html>
