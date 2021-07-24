@@ -3,6 +3,7 @@ from .forms import FormCliente
 from django.http.response import HttpResponse
 from datetime import date
 from django.shortcuts import redirect, render
+from django.db.models import Count
 from .models import Cliente as comprador, Venta as vetanrealizada, Sandwich as emparerado, Contenido as tablacontenido, Ingrediente as tablaingrediente, Dimension as tabladimension
 
 def addCliente(request):
@@ -348,3 +349,42 @@ def verVentrasIngrediente(request):
    context = fix
 
    return render(request, 'test.html', {'context': context})
+
+
+def verVentasClientes(request):
+   pass
+
+
+def reportes(request):
+   n = 0
+   ventas_totales = vetanrealizada.objects.count()
+   ventas_sw_totales = emparerado.objects.count()
+
+   ventas_dia = vetanrealizada.objects.values('fecha').annotate(count=Count('fecha')).order_by()
+   #print(v['fecha'], v['count'])
+
+   with connection.cursor() as cursor:
+      cursor.execute (
+      "SELECT count(s.sandwich_id), v.fecha FROM user_sandwich s, user_venta v WHERE s.venta_id_id = v.venta_id GROUP BY v.fecha;")
+      ventas_sw_dia = cursor.fetchall()
+
+   ventas_size = emparerado.objects.values('dimension_id').annotate(count=Count('dimension_id')).order_by()
+   #print(v['dimension_id'], v['count'])
+
+   ventas_ingrediente = tablacontenido.objects.values('ingrediente_id').annotate(count=Count('ingrediente_id')).order_by()
+   #print(v['ingrediente_id'], v['count'])
+
+   ventas_cliente = vetanrealizada.objects.values('cliente_id').annotate(count=Count('cliente_id')).order_by('-count')
+   clientes = comprador.objects.all()
+
+   with connection.cursor() as cursor:
+      cursor.execute (
+      "SELECT count(s.sandwich_id), v.cliente_id_id FROM user_sandwich s, user_venta v WHERE s.venta_id_id = v.venta_id GROUP BY v.cliente_id_id ORDER BY count(s.sandwich_id) DESC;")
+      ventas_sw_cliente = cursor.fetchall()
+
+   '''for v in ventas_cliente:
+      for c in clientes:
+         if c.cliente_id == int(v['cliente_id']):
+            print(c.nombre, c.apellido, c.identificacion, v['count'])'''
+
+   return render(request, 'reporte.html', {'ventas_totales': ventas_totales, 'ventas_sw_totales': ventas_sw_totales, 'ventas_dia': ventas_dia})
