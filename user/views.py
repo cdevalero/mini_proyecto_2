@@ -31,7 +31,7 @@ def Ordenar(request):
          lista.append(sandwiche)
          request.session['sandwiches'] = lista
          return redirect('venta')
-      elif 'agregar' in request.POST:
+      elif 'agregar' in request.POST: 
          lista = request.session['sandwiches']
          lista.append(sandwiche)
          request.session['sandwiches'] = lista
@@ -54,7 +54,7 @@ def makeSandwich(request):
    try:
       sandwich.append(request.POST['cha'])
    except:
-      pass
+      print(request.POST)
    try:
       sandwich.append(request.POST['pim'])
    except:
@@ -361,18 +361,26 @@ def reportes(request):
    ventas_sw_totales = emparerado.objects.count()
 
    ventas_dia = vetanrealizada.objects.values('fecha').annotate(count=Count('fecha')).order_by()
-   #print(v['fecha'], v['count'])
+   for v in ventas_dia:
+      v['fecha'] = v['fecha'].strftime("%d-%m-%Y")
+
 
    with connection.cursor() as cursor:
       cursor.execute (
       "SELECT count(s.sandwich_id), v.fecha FROM user_sandwich s, user_venta v WHERE s.venta_id_id = v.venta_id GROUP BY v.fecha;")
       ventas_sw_dia = cursor.fetchall()
+   temp = {}
+   v_temp = []
+   for v in ventas_sw_dia:
+      temp['fecha'] = v[1].strftime("%d-%m-%Y")
+      temp['count'] = v[0]
+      v_temp.append(temp)
+      temp = {}
+   ventas_sw_dia = v_temp
 
    ventas_size = emparerado.objects.values('dimension_id').annotate(count=Count('dimension_id')).order_by()
-   #print(v['dimension_id'], v['count'])
 
    ventas_ingrediente = tablacontenido.objects.values('ingrediente_id').annotate(count=Count('ingrediente_id')).order_by()
-   #print(v['ingrediente_id'], v['count'])
 
    ventas_cliente = vetanrealizada.objects.values('cliente_id').annotate(count=Count('cliente_id')).order_by('-count')
    clientes = comprador.objects.all()
@@ -381,10 +389,18 @@ def reportes(request):
       cursor.execute (
       "SELECT count(s.sandwich_id), v.cliente_id_id FROM user_sandwich s, user_venta v WHERE s.venta_id_id = v.venta_id GROUP BY v.cliente_id_id ORDER BY count(s.sandwich_id) DESC;")
       ventas_sw_cliente = cursor.fetchall()
+   temp = {}
+   v_temp = []
+   for v in ventas_sw_cliente:
+      temp['cliente_id'] = v[1]
+      temp['count'] = v[0]
+      v_temp.append(temp)
+      temp = {}
+   ventas_sw_cliente = v_temp
 
-   '''for v in ventas_cliente:
+   for v in ventas_cliente:
       for c in clientes:
          if c.cliente_id == int(v['cliente_id']):
-            print(c.nombre, c.apellido, c.identificacion, v['count'])'''
+            print(c.nombre, c.apellido, c.identificacion, v['count'])
 
-   return render(request, 'reporte.html', {'ventas_totales': ventas_totales, 'ventas_sw_totales': ventas_sw_totales, 'ventas_dia': ventas_dia})
+   return render(request, 'reporte.html', {'ventas_sw_cliente':ventas_sw_cliente,'clientes':clientes,'ventas_cliente':ventas_cliente,'ventas_ingrediente': ventas_ingrediente,'ventas_size': ventas_size, 'ventas_totales': ventas_totales, 'ventas_sw_totales': ventas_sw_totales, 'ventas_dia': ventas_dia, 'ventas_sw_dia':ventas_sw_dia})

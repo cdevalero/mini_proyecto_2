@@ -8,6 +8,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Sandwich U</title>
 	<link rel="stylesheet" href="{% static 'ordenar.css' %}">
+	<link rel="stylesheet" href="{% static 'reporte.css' %}">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400;700&display=swap" rel="stylesheet">
@@ -21,65 +22,86 @@
 				Sandwich U
 			</div>
 			<div class="nav-bar-buttons">
-				<a href="#">Ordenar</a>
-				<a href="#">Reportes</a>
+				<a href="/">Ordenar</a>
+				<a href="/reporte_general">Reportes</a>
 			</div>
 		</div>
 	</section>
 
     <section class="cls-ordenar">
 		<div class="venta-total">
-			<h1>Ventas Totales: 7</h1>
-			<h2>Ventas de sandwich totales: 30</h2>
+			<h1>Transacciones Totales Realizadas: {{ventas_totales}}</h1>
+			<h2>Sandwiches totales vendidos: {{ventas_sw_totales}}</h2>
 		</div>
 		<div class="venta-detalle">
 			<div class="venta-detalle-columna">
 				<div class="col">
-					<h2>Ventas Por dia</h2>
-					<h3>21-3-12: 9</h3>
-					<h3>22-3-12: 3</h3>
-					<h3>23-3-12: 2</h3>
-					<h3>24-3-12: 6</h3>
+					<h2>Transacciones por dia</h2>
+					{% for v in ventas_dia %}
+						<h3>{{v.fecha}}: <strong>{{v.count}}</strong></h3>
+					{% endfor %}
 				</div>
 				<div class="col">
-					<h2>Ventas de sandwich por dia</h2>
-					<h3>21-3-12: 9</h3>
-					<h3>22-3-12: 10</h3>
-					<h3>23-3-12: 17</h3>
-					<h3>24-3-12: 12</h3>
+					<h2>Sandwiches vendidos por dia</h2>
+					{% for v in ventas_sw_dia %}
+						<h3>{{v.fecha}}: <strong>{{v.count}}</strong></h3>
+					{% endfor %}
 				</div>
 				<div class="col">
-					<h2>Ventas por tamaño de sandwich</h2>
-					<h3>Individual: 5</h3>
-					<h3>Doble: 15</h3>
-					<h3>Triple: 12</h3>
-				</div>
+					<h2>Transacciones por cliente</h2>
+					{% for v in ventas_cliente %}
+						{% for c in clientes %}
+							{% if c.cliente_id == v.cliente_id %}
+								<h3>{{c.nombre}} {{c.apellido}} ({{c.identificacion}}): <strong>{{v.count}}</strong></h3>
+							{% endif %}
+						{% endfor %}
+					{% endfor %}
+				</div>				
 			</div>
 			<div class="venta-detalle-columna">
 				<div class="col">
-					<h2>Ventas por Ingrediete usado en sandwich</h2>
-					<h3>Jamón: 12</h3>
-					<h3>Champiñones: 12</h3>
-					<h3>Pimentón: 1</h3>
-					<h3>Doble queso: 7</h3>
-					<h3>Aceitunas: 5</h3>
-					<h3>Pepperoni: 18</h3>
-					<h3>Salchichón: 17</h3>
-					<h3>Queso: 3</h3>
+					<h2>Sandwiches vendidos (agrupado por ingrediente)</h2>
+					{% for v in ventas_ingrediente %}
+						{% if v.ingrediente_id == 1 %}
+							<h3>Jamón: <strong>{{v.count}}</strong></h3>
+						{% elif v.ingrediente_id == 2 %}
+							<h3>Champiñones: <strong>{{v.count}}</strong></h3>
+						{% elif v.ingrediente_id == 3 %}
+							<h3>Pimentón: <strong>{{v.count}}</strong></h3>
+						{% elif v.ingrediente_id == 4 %}
+							<h3>Doble queso: <strong>{{v.count}}</strong></h3>
+						{% elif v.ingrediente_id == 5 %}
+							<h3>Aceitunas: <strong>{{v.count}}</strong></h3>
+						{% elif v.ingrediente_id == 6 %}
+							<h3>Pepperoni: <strong>{{v.count}}</strong></h3>
+						{% elif v.ingrediente_id == 7 %}
+							<h3>Salchichón: <strong>{{v.count}}</strong></h3>
+						{% elif v.ingrediente_id == 8 %}
+							<h3>Solo (queso): <strong>{{v.count}}</strong></h3>
+						{% endif %}
+					{% endfor %}
 				</div>
 				<div class="col">
-					<h2>Ventas por cliente</h2>
-					<h3>Carlos Valero: 5</h3>
-					<h3>Valentina Bastidas: 4</h3>
-					<h3>Diego Rojas: 3</h3>
-					<h3>Camila Cabello: 1</h3>
+					<h2>Sandwiches vendidos (agrupados por tamaño)</h2>
+					{% for v in ventas_size %}
+						{% if v.dimension_id == 1 %}
+							<h3>Triple: <strong>{{v.count}}</strong></h3>
+						{% elif v.dimension_id == 2 %}
+							<h3>Doble: <strong>{{v.count}}</strong></h3>
+						{% elif v.dimension_id == 3 %}
+							<h3>Individual: <strong>{{v.count}}</strong></h3>
+						{% endif %}
+					{% endfor %}
 				</div>
 				<div class="col">
-					<h2>Ventas de sandwiche por cliente</h2>
-					<h3>Camila Cabello: 8</h3>
-					<h3>Valentina Bastidas: 6</h3>
-					<h3>Carlos Valero: 5</h3>
-					<h3>Diego Rojas: 3</h3>
+					<h2>Sandwiches vendidos (agrupado por cliente)</h2>
+					{% for v in ventas_sw_cliente %}
+						{% for c in clientes %}
+							{% if c.cliente_id == v.cliente_id %}
+								<h3>{{c.nombre}} {{c.apellido}} ({{c.identificacion}}): <strong>{{v.count}}</strong></h3>
+							{% endif %}
+						{% endfor %}
+					{% endfor %}
 				</div>
 			</div>
 		</div>
