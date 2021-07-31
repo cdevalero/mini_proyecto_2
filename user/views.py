@@ -1,12 +1,14 @@
 from django.db import connection
 from .forms import FormCliente
-from django.http.response import HttpResponse
 from datetime import date
 from django.shortcuts import redirect, render
 from django.db.models import Count
 from .models import Cliente as comprador, Venta as vetanrealizada, Sandwich as emparerado, Contenido as tablacontenido, Ingrediente as tablaingrediente, Dimension as tabladimension
 
 def addCliente(request):
+   '''
+   Envia y recibe el formulario de cliente para empezar el proceso de compra
+   '''
    if request.method == 'POST':
       form = FormCliente(request.POST)
       identificacion = form.data['identificacion']
@@ -23,7 +25,9 @@ def addCliente(request):
 
 
 def Ordenar(request):
-   
+   '''
+   Recibe el formulario del sandwich que se esta ordenando
+   '''
    if request.method == 'POST':
       sandwiche = makeSandwich(request)
       if 'terminar' in request.POST:
@@ -42,6 +46,9 @@ def Ordenar(request):
 
 
 def makeSandwich(request):
+   '''
+   Genera una lista donde se almacena un sandwich especifico 
+   '''
    sandwich = []
    try:
       sandwich.append(request.POST['size'])
@@ -54,7 +61,7 @@ def makeSandwich(request):
    try:
       sandwich.append(request.POST['cha'])
    except:
-      print(request.POST)
+      pass
    try:
       sandwich.append(request.POST['pim'])
    except:
@@ -79,6 +86,9 @@ def makeSandwich(request):
 
 
 def traducir(request, listas):
+   '''
+   interpreta los codigos de productos enviados del front 
+   '''
    sandwiches = []
    total = 0
    n = 1
@@ -131,6 +141,9 @@ def traducir(request, listas):
 
 
 def finalizarVenta(request):
+   '''
+   Concreta la venta del una orden guardando los datos en la BD
+   '''
    cliente = request.session['cliente']
    sandwiches, precio = traducir(request, request.session['sandwiches'])
    if request.method == 'POST':
@@ -152,6 +165,9 @@ def finalizarVenta(request):
 
 
 def guardar_cliente(request, cliente):
+   '''
+   Insert de cliente en la tabla cliente
+   '''
    with connection.cursor() as cursor:
         cursor.execute (
          "INSERT INTO user_cliente(nombre, apellido, direccion, identificacion) VALUES (%s, %s, %s, %s);",
@@ -159,6 +175,9 @@ def guardar_cliente(request, cliente):
 
 
 def guardar_venta(request, deli, metodo, precio, cliente):
+   '''
+   Insert de venta en la tabla venta
+   '''
    id = comprador.objects.get(identificacion=cliente)
    with connection.cursor() as cursor:
         cursor.execute (
@@ -167,6 +186,9 @@ def guardar_venta(request, deli, metodo, precio, cliente):
 
 
 def guardar_sandwiches(request, sandwiches):
+   '''
+   Insert de Sandwiches en la tabla sandwich e ingredientes en contenido
+   '''
    venta = obtenerVenta(request)
    venta= venta[0]
    for s in sandwiches: 
@@ -184,6 +206,9 @@ def guardar_sandwiches(request, sandwiches):
 
 
 def obtenerVenta(request):
+   '''
+   Select explicto para obtener la cantidad de ventas registradas en la base de datos
+   '''
    with connection.cursor() as cursor:
       cursor.execute ("SELECT MAX(venta_id) FROM user_venta;")
       row = cursor.fetchone()
@@ -193,10 +218,13 @@ def obtenerVenta(request):
 # -------------- #
 
 def verVentrasGenerales(request):
+   '''
+   Permite ver en detalle las ventas realizadas
+   '''
    context = []
    vista = {}
 
-   ventas = vetanrealizada.objects.all()
+   ventas = vetanrealizada.objects.all().order_by('-venta_id')
    
    for v in ventas: 
       vista['venta_id'] = v.venta_id
@@ -225,9 +253,59 @@ def verVentrasGenerales(request):
       context.append(vista)
       vista={}
       
-   return render(request, 'test.html', {'context': context})
+   return render(request, 'historico.html', {'context': context})
 
 
+def reportes(request):
+   '''
+   Genera los reportes de la aplicacion
+   '''
+   n = 0
+   ventas_totales = vetanrealizada.objects.count()
+   ventas_sw_totales = emparerado.objects.count()
+
+   ventas_dia = vetanrealizada.objects.values('fecha').annotate(count=Count('fecha')).order_by()
+   for v in ventas_dia:
+      v['fecha'] = v['fecha'].strftime("%d-%m-%Y")
+
+
+   with connection.cursor() as cursor:
+      cursor.execute (
+      "SELECT count(s.sandwich_id), v.fecha FROM user_sandwich s, user_venta v WHERE s.venta_id_id = v.venta_id GROUP BY v.fecha;")
+      ventas_sw_dia = cursor.fetchall()
+   temp = {}
+   v_temp = []
+   for v in ventas_sw_dia:
+      temp['fecha'] = v[1].strftime("%d-%m-%Y")
+      temp['count'] = v[0]
+      v_temp.append(temp)
+      temp = {}
+   ventas_sw_dia = v_temp
+
+   ventas_size = emparerado.objects.values('dimension_id').annotate(count=Count('dimension_id')).order_by()
+
+   ventas_ingrediente = tablacontenido.objects.values('ingrediente_id').annotate(count=Count('ingrediente_id')).order_by()
+
+   ventas_cliente = vetanrealizada.objects.values('cliente_id').annotate(count=Count('cliente_id')).order_by('-count')
+   clientes = comprador.objects.all()
+
+   with connection.cursor() as cursor:
+      cursor.execute (
+      "SELECT count(s.sandwich_id), v.cliente_id_id FROM user_sandwich s, user_venta v WHERE s.venta_id_id = v.venta_id GROUP BY v.cliente_id_id ORDER BY count(s.sandwich_id) DESC;")
+      ventas_sw_cliente = cursor.fetchall()
+   temp = {}
+   v_temp = []
+   for v in ventas_sw_cliente:
+      temp['cliente_id'] = v[1]
+      temp['count'] = v[0]
+      v_temp.append(temp)
+      temp = {}
+   ventas_sw_cliente = v_temp
+
+   return render(request, 'reporte.html', {'ventas_sw_cliente':ventas_sw_cliente,'clientes':clientes,'ventas_cliente':ventas_cliente,'ventas_ingrediente': ventas_ingrediente,'ventas_size': ventas_size, 'ventas_totales': ventas_totales, 'ventas_sw_totales': ventas_sw_totales, 'ventas_dia': ventas_dia, 'ventas_sw_dia':ventas_sw_dia})
+   
+
+'''
 def verVentrasDia(request):
    context = []
    vista = {}
@@ -262,7 +340,6 @@ def verVentrasDia(request):
       vista={}
       
    return render(request, 'test.html', {'context': context})
-
 
 def verVentrasSandwich(request):
    context = []
@@ -305,7 +382,6 @@ def verVentrasSandwich(request):
    context = fix
 
    return render(request, 'test.html', {'context': context})
-
 
 def verVentrasIngrediente(request):
    context = []
@@ -350,57 +426,6 @@ def verVentrasIngrediente(request):
 
    return render(request, 'test.html', {'context': context})
 
-
 def verVentasClientes(request):
    pass
-
-
-def reportes(request):
-   n = 0
-   ventas_totales = vetanrealizada.objects.count()
-   ventas_sw_totales = emparerado.objects.count()
-
-   ventas_dia = vetanrealizada.objects.values('fecha').annotate(count=Count('fecha')).order_by()
-   for v in ventas_dia:
-      v['fecha'] = v['fecha'].strftime("%d-%m-%Y")
-
-
-   with connection.cursor() as cursor:
-      cursor.execute (
-      "SELECT count(s.sandwich_id), v.fecha FROM user_sandwich s, user_venta v WHERE s.venta_id_id = v.venta_id GROUP BY v.fecha;")
-      ventas_sw_dia = cursor.fetchall()
-   temp = {}
-   v_temp = []
-   for v in ventas_sw_dia:
-      temp['fecha'] = v[1].strftime("%d-%m-%Y")
-      temp['count'] = v[0]
-      v_temp.append(temp)
-      temp = {}
-   ventas_sw_dia = v_temp
-
-   ventas_size = emparerado.objects.values('dimension_id').annotate(count=Count('dimension_id')).order_by()
-
-   ventas_ingrediente = tablacontenido.objects.values('ingrediente_id').annotate(count=Count('ingrediente_id')).order_by()
-
-   ventas_cliente = vetanrealizada.objects.values('cliente_id').annotate(count=Count('cliente_id')).order_by('-count')
-   clientes = comprador.objects.all()
-
-   with connection.cursor() as cursor:
-      cursor.execute (
-      "SELECT count(s.sandwich_id), v.cliente_id_id FROM user_sandwich s, user_venta v WHERE s.venta_id_id = v.venta_id GROUP BY v.cliente_id_id ORDER BY count(s.sandwich_id) DESC;")
-      ventas_sw_cliente = cursor.fetchall()
-   temp = {}
-   v_temp = []
-   for v in ventas_sw_cliente:
-      temp['cliente_id'] = v[1]
-      temp['count'] = v[0]
-      v_temp.append(temp)
-      temp = {}
-   ventas_sw_cliente = v_temp
-
-   for v in ventas_cliente:
-      for c in clientes:
-         if c.cliente_id == int(v['cliente_id']):
-            print(c.nombre, c.apellido, c.identificacion, v['count'])
-
-   return render(request, 'reporte.html', {'ventas_sw_cliente':ventas_sw_cliente,'clientes':clientes,'ventas_cliente':ventas_cliente,'ventas_ingrediente': ventas_ingrediente,'ventas_size': ventas_size, 'ventas_totales': ventas_totales, 'ventas_sw_totales': ventas_sw_totales, 'ventas_dia': ventas_dia, 'ventas_sw_dia':ventas_sw_dia})
+'''

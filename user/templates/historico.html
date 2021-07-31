@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        {% load static %}
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sandwich U</title>
+        <link rel="stylesheet" href="{% static 'ordenar.css' %}">
+        <link rel="stylesheet" href="{% static 'reporte.css' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    </head>
+
+<body>
+	<section class="cls-nav-bar">
+		<div class="nav-bar">
+			<div class="nav-bar-logo">
+				Sandwich U
+			</div>
+			<div class="nav-bar-buttons">
+				<a href="/">Ordenar</a>
+                <a href="/histroia">Histroia</a>
+				<a href="/reporte_general">Reportes</a>
+			</div>
+		</div>
+	</section>
+
+    <section class="cls-ordenar">
+        <div class="box-sandwiches">
+			
+            {% for orden in context %}
+                <div >
+                    <div class="sandwich">
+                        <samp class="title">Orden {{orden.venta_id}}</samp>
+                        <br>
+                        <span>Fecha de venta: <strong>{{orden.venta_fecha}}</strong></span>
+                        <br>
+                        <span>Tipo de pago: <strong>{{orden.venta_pago}}</strong></span>
+                        <br>
+                        {% if orden.venta_deli == 'S' %}
+                            <span>Delivery: <strong>Si</strong></span>
+                        {% else %}
+                            <span>Delivery: <strong>No</strong></span>
+                        {% endif %}  
+                        <br>
+                        <br>
+                        <h4><strong>Cliente</strong></h4>
+                        <div>
+                            <span><strong>Nombre:</strong> {{orden.cliente_nombre}}</span>
+                            <br>
+                            <span><strong>Identificacion:</strong> {{orden.cliente}}</span>
+                            <br>
+                            <span><strong>Direccion:</strong> {{orden.cliente_direccion}}</span>
+                        </div>
+                            <div class="sandwich-options">
+                                <div class="sandwich-size">
+                                    <samp>Sandwiches</samp>
+                                    {% for sw in orden.ordenes %}
+                                        <label><strong>Tamaño: </strong> {{sw.size}}</label>
+                                        <label><strong>Ingredientes: </strong>
+                                            {% for i in sw.ingrediente %}
+                                                {{i}},
+                                            {% endfor %}
+                                        </label>
+                                        <br>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        <br>
+                        <span class="title">Total: {{orden.venta_total}}</span>
+                    </div>
+                </div>
+            {% endfor %}
+                
+            
+		</div>
+	</section>
+
+</body>
+
+</html>
